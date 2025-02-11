@@ -29,15 +29,37 @@ export async function POST(req: Request) {
     const { messages } = await req.json()
     const lastMessage = messages[messages.length - 1].content
 
-    // Detect if the message contains an error
-    const isErrorMessage =
-      lastMessage.toLowerCase().includes("error") ||
-      lastMessage.toLowerCase().includes("failed") ||
-      lastMessage.toLowerCase().includes("cannot")
+    // Check if the last message contains a repository name
+    const repoNameMatch = lastMessage.match(/repository name is (\w+)/);
+    const repoName = repoNameMatch ? repoNameMatch[1] : null;
 
-    const prompt = isErrorMessage
-      ? `The user is experiencing the following Git error. Please analyze it and provide solutions with relevant resources:\n\n${lastMessage}`
-      : lastMessage
+    let responseText = "";
+
+    if (repoName) {
+      // Dynamic commands based on the repository name
+      responseText = `
+Create a new repository on the command line:
+\`\`\`bash
+echo "# ${repoName}" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/krishn404/${repoName}.git
+git push -u origin main
+\`\`\`
+
+…or push an existing repository from the command line:
+\`\`\`bash
+git remote add origin https://github.com/krishn404/${repoName}.git
+git branch -M main
+git push -u origin main
+\`\`\`
+      `;
+    } else {
+      // If no repository name is found, use the last message as the prompt for the AI
+      responseText = lastMessage;
+    }
 
     if (!apiKey) {
       return new Response("API key is missing", { status: 500 })
@@ -46,7 +68,7 @@ export async function POST(req: Request) {
     const { text } = await generateText({
       model: groq("mixtral-8x7b-32768"),
       system: SYSTEM_PROMPT,
-      prompt,
+      prompt: responseText,
     })
 
     return new Response(text)
