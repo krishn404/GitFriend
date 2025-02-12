@@ -74,4 +74,3 @@ export async function POST(req: Request) {
     return new Response("Error processing your request", { status: 500 })
   }
 }
-
