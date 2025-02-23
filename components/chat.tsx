@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, LightbulbIcon, BarChart2, Image, Code,  } from "lucide-react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import ReactMarkdown from "react-markdown"
@@ -70,28 +70,35 @@ export function Chat() {
 
   return (
     <div className="min-h-screen bg-[#18181B] flex flex-col">
-      {/* Top Navigation */}
-      <header className="p-4">
+      {/* Top Navigation - Make it more compact on mobile */}
+      <header className="p-4 sm:p-4">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold text-white">Git Friend</span>
+            <span className="text-lg sm:text-xl font-semibold text-white">Git Friend</span>
           </div>
-          
+          {/* <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+          </div> */}
         </div>
       </header>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+      {/* Main Chat Area - Adjust padding for mobile */}
+      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-y-auto w-full">
         <div className="w-full max-w-3xl space-y-4 mb-24">
           {messages.length === 0 ? (
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-semibold text-white">Welcome to Git Friend</h1>
-              <p className="text-xl text-gray-400">Ask me anything about Git & GitHub!</p>
+            <div className="text-center space-y-4 px-2 sm:px-4">
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white break-words">Welcome to Git Friend</h1>
+              <p className="text-lg sm:text-xl text-gray-400 break-words">Ask me anything about Git & GitHub!</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 px-2 sm:px-0">
               {messages.map((message, i) => (
-                <div key={i} className="flex gap-3">
+                <div key={i} className="flex gap-3 min-w-0">
                   {message.role === "assistant" ? (
                     <>
                       <div className="w-6 h-6 mt-1 flex-shrink-0">
@@ -99,13 +106,17 @@ export function Chat() {
                           {/* Assistant icon here */}
                         </div>
                       </div>
-                      <div className="prose dark:prose-invert max-w-none flex-1">
+                      <div className="prose dark:prose-invert max-w-none flex-1 overflow-hidden">
                         <ReactMarkdown
                           components={{
                             code({ inline, className, children, ...props }: CodeProps) {
                               const match = /language-(\w+)/.exec(className || "")
                               if (!inline && match) {
-                                return <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
+                                return (
+                                  <div className="max-w-full overflow-x-auto">
+                                    <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
+                                  </div>
+                                )
                               }
                               return (
                                 <code className={className} {...props}>
@@ -113,16 +124,34 @@ export function Chat() {
                                 </code>
                               )
                             },
-                            p: ({ children }) => <p className="text-gray-300 leading-7">{children}</p>,
-                            h1: ({ children }) => <h1 className="text-xl font-semibold text-white mb-4">{children}</h1>,
+                            div: ({ children }) => (
+                              <div className="max-w-full overflow-x-hidden">
+                                {children}
+                              </div>
+                            ),
+                            h1: ({ children }) => (
+                              <h1 className="text-xl sm:text-2xl font-semibold text-white mb-4">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-lg sm:text-xl font-semibold text-white mt-6 mb-3">
+                                {children}
+                              </h2>
+                            ),
+                            p: ({ children }) => (
+                              <p className="text-gray-300 leading-7 break-words mb-4">
+                                {children}
+                              </p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc list-inside space-y-2 mb-4">
+                                {children}
+                              </ul>
+                            ),
                             li: ({ children }) => (
-                              <li className="text-gray-300 mb-2">
-                                {typeof children === 'string' && children.includes(' - ') ? (
-                                  <>
-                                    <strong className="text-white">{children.split(' - ')[0]}</strong>
-                                    {' - ' + children.split(' - ')[1]}
-                                  </>
-                                ) : children}
+                              <li className="text-gray-300 leading-7">
+                                {children}
                               </li>
                             ),
                             a: ({ href, children }) => (
@@ -130,10 +159,15 @@ export function Chat() {
                                 href={href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-300 hover:bg-gray-700 transition-colors break-all mb-2"
                               >
                                 {children}
                               </a>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-white">
+                                {children}
+                              </strong>
                             ),
                           }}
                         >
@@ -171,18 +205,18 @@ export function Chat() {
         </div>
       </div>
 
-      {/* Input Area - Made sticky */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#18181B] border-t border-gray-800">
+      {/* Input Area - Adjust padding and font size for mobile */}
+      <div className="fixed bottom-0 left-0 right-0 p-2 sm:p-4 bg-[#18181B] border-t border-gray-800">
         <div className="max-w-3xl mx-auto">
           <div className="relative">
-            <div className="absolute left-4 top-3 flex items-center gap-2">
-              <Search className="w-5 h-5 text-gray-500" />
+            <div className="absolute left-3 sm:left-4 top-3 flex items-center gap-2">
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
             </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about Git commands, workflows, or best practices..."
-              className="w-full bg-[#27272A] rounded-xl pl-12 py-3 min-h-[48px] resize-none border-0 focus:ring-0 text-gray-300 placeholder:text-gray-500"
+              className="w-full bg-[#27272A] rounded-xl pl-10 sm:pl-12 py-3 min-h-[48px] text-sm sm:text-base resize-none border-0 focus:ring-0 text-gray-300 placeholder:text-gray-500"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
@@ -192,7 +226,7 @@ export function Chat() {
             />
           </div>
 
-          <div className="text-center mt-4 text-sm text-gray-500">
+          <div className="text-center mt-2 sm:mt-4 text-xs sm:text-sm text-gray-500">
             Developed by{" "}
             <a href="https://github.com/krishn404" className="text-gray-400 hover:text-white">Krishna</a> Open Source at{" "}
             <a href="https://github.com/krishn404/gitchat" className="text-gray-400 hover:text-white">Git Friend</a>.

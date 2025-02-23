@@ -23,8 +23,8 @@ An AI-powered web application that helps developers learn and troubleshoot Git a
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/krishn404/git-helper.git
-   cd git-helper
+   git clone https://github.com/krishn404/gitchat.git
+   cd gitchat
    ```
 
 2. **Install dependencies**
