@@ -1,41 +1,34 @@
 "use client"
 
 import { useState } from "react"
-import { Bot, Send, User, Loader2, GitBranch, GitPullRequest, GitCommit } from "lucide-react"
+import { Search, LightbulbIcon, BarChart2, Image, Code,  } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import ReactMarkdown from "react-markdown"
 import { CodeBlock } from "./code-block"
-import { SuggestionCard } from "./suggestion-card"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 
 interface Message {
   role: "user" | "assistant"
   content: string
 }
 
+// Add this type definition for the code component props
+interface CodeProps {
+  node?: any
+  inline?: boolean
+  className?: string
+  children: React.ReactNode
+}
+
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
-  const suggestions = [
-    {
-      icon: GitBranch,
-      title: "Git Branching",
-      subtitle: "Learn advanced workflows",
-    },
-    {
-      icon: GitPullRequest,
-      title: "Pull Requests",
-      subtitle: "Collaboration basics",
-    },
-    {
-      icon: GitCommit,
-      title: "Best Practices",
-      subtitle: "Write better code",
-    },
-  ]
+  const [isResourceOpen, setIsResourceOpen] = useState(false)
+  const [selectedResource, setSelectedResource] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,173 +61,161 @@ export function Chat() {
     }
   }
 
+  const handleResourceClick = (href: string | undefined) => {
+    if (href) {
+      setSelectedResource(href)
+      setSheetOpen(true)
+    }
+  }
+
   return (
-    <div className="min-h-screen w-full ">
-      <div className="glass-container w-full max-w-[1200px] mx-auto rounded-3xl overflow-hidden">
-      <div className="h-[calc(100vh-2rem)] flex flex-col bg-gradient-to-b from-[#C8B2FF] to-[#FED0FF] dark:bg-gradient-to-b dark:from-[#1a0d26] dark:via-[#5e248d] dark:to-[#1a0d26]">
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-            <div className="max-w-3xl mx-auto p-4 space-y-4">
-              {messages.length === 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="h-full flex flex-col items-center justify-center text-center px-4 py-20"
-                >
-                  <motion.div 
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", bounce: 0.4 }}
-                    className="bg-primary/10 p-4 rounded-full mb-6"
-                  >
-                    <Bot className="w-12 h-12" />
-                  </motion.div>
-                  <motion.h2 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-3xl font-semibold mb-2 text-text-primary"
-                  >
-                    Hi, Developer
-                  </motion.h2>
-                  <motion.h3 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-xl mb-3 text-text-secondary"
-                  >
-                    Can I help you with anything?
-                  </motion.h3>
-                  <motion.p 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-muted-foreground mb-8 max-w-md"
-                  >
-                    Ready to assist you with Git and GitHub questions, from basic commands to advanced workflows.
-                  </motion.p>
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full"
-                  >
-                    {suggestions.map((suggestion, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                      >
-                        <SuggestionCard
-                          {...suggestion}
-                          onClick={() => {
-                            setInput(`Tell me about ${suggestion.title.toLowerCase()}`)
-                            handleSubmit({ preventDefault: () => {} } as any)
-                          }}
-                        />
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </motion.div>
-              ) : (
-                <div className="space-y-6">
-                  <AnimatePresence>
-                    {messages.map((message, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className={`flex gap-3 ${message.role === "assistant" ? "bg-muted/30 rounded-lg p-4" : "p-4"}`}
-                      >
-                        {message.role === "assistant" ? (
-                          <Bot className="w-6 h-6 mt-1 flex-shrink-0" />
-                        ) : (
-                          <User className="w-6 h-6 mt-1 flex-shrink-0" />
-                        )}
-                        <div className="prose dark:prose-invert max-w-none flex-1">
-                          <ReactMarkdown
-                            components={{
-                              code({ node, inline, className, children, ...props }) {
-                                const match = /language-(\w+)/.exec(className || "")
-                                if (!inline && match) {
-                                  return <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
-                                }
-                                return (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                )
-                              },
-                              a({ href, children }) {
-                                return (
-                                  <a
-                                    href={href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                                  >
-                                    {children}
-                                  </a>
-                                )
-                              },
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
+    <div className="min-h-screen bg-[#18181B] flex flex-col">
+      {/* Top Navigation */}
+      <header className="p-4">
+        <div className="max-w-screen-xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-semibold text-white">Git Friend</span>
+          </div>
+          
+        </div>
+      </header>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+        <div className="w-full max-w-3xl space-y-4 mb-24">
+          {messages.length === 0 ? (
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl font-semibold text-white">Welcome to Git Friend</h1>
+              <p className="text-xl text-gray-400">Ask me anything about Git & GitHub!</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {messages.map((message, i) => (
+                <div key={i} className="flex gap-3">
+                  {message.role === "assistant" ? (
+                    <>
+                      <div className="w-6 h-6 mt-1 flex-shrink-0">
+                        <div className="w-6 h-6">
+                          {/* Assistant icon here */}
                         </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                  {isLoading && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex gap-3 bg-muted/30 rounded-lg p-4"
-                    >
-                      <Bot className="w-6 h-6 mt-1 flex-shrink-0" />
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Thinking...
                       </div>
-                    </motion.div>
+                      <div className="prose dark:prose-invert max-w-none flex-1">
+                        <ReactMarkdown
+                          components={{
+                            code({ inline, className, children, ...props }: CodeProps) {
+                              const match = /language-(\w+)/.exec(className || "")
+                              if (!inline && match) {
+                                return <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
+                              }
+                              return (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              )
+                            },
+                            p: ({ children }) => <p className="text-gray-300 leading-7">{children}</p>,
+                            h1: ({ children }) => <h1 className="text-xl font-semibold text-white mb-4">{children}</h1>,
+                            li: ({ children }) => (
+                              <li className="text-gray-300 mb-2">
+                                {typeof children === 'string' && children.includes(' - ') ? (
+                                  <>
+                                    <strong className="text-white">{children.split(' - ')[0]}</strong>
+                                    {' - ' + children.split(' - ')[1]}
+                                  </>
+                                ) : children}
+                              </li>
+                            ),
+                            a: ({ href, children }) => (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                              >
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                        
+                        {/* Resource badges at the bottom of the message */}
+
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-6 h-6 mt-1 flex-shrink-0">
+                      {/* User icon here */}
+                    </div>
                   )}
                 </div>
-              )}
+              ))}
             </div>
-          </div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 border-t border-gray-200 dark:border-gray-800"
-          >
-            <form onSubmit={handleSubmit} className="flex gap-3 items-center max-w-3xl mx-auto">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything about Git..."
-                className="flex-1 min-h-[44px] resize-none bg-gray-50 dark:bg-[#181619] border-0 focus:ring-0 rounded-xl text-[14px] placeholder:text-gray-900 dark:placeholder:text-gray-200"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
-                  }
-                }}
-              />
-              <Button
-                type="submit"
-                disabled={isLoading}
-                size="icon"
-                className="h-11 w-11 shrink-0 rounded-xl bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </form>
-          </motion.div>
+          )}
+          {isLoading && (
+            <div className="flex gap-3">
+              <div className="w-6 h-6 mt-1 flex-shrink-0">
+                <div className="w-6 h-6">
+                  {/* Loading spinner icon */}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="animate-spin">
+                  {/* Loading spinner */}
+                </div>
+                Thinking...
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Input Area - Made sticky */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#18181B] border-t border-gray-800">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative">
+            <div className="absolute left-4 top-3 flex items-center gap-2">
+              <Search className="w-5 h-5 text-gray-500" />
+            </div>
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about Git commands, workflows, or best practices..."
+              className="w-full bg-[#27272A] rounded-xl pl-12 py-3 min-h-[48px] resize-none border-0 focus:ring-0 text-gray-300 placeholder:text-gray-500"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
+              }}
+            />
+          </div>
+
+          <div className="text-center mt-4 text-sm text-gray-500">
+            Developed by{" "}
+            <a href="https://github.com/krishn404" className="text-gray-400 hover:text-white">Krishna</a> Open Source at{" "}
+            <a href="https://github.com/krishn404/gitchat" className="text-gray-400 hover:text-white">Git Friend</a>.
+          </div>
+        </div>
+      </div>
+
+      {/* Add a Sheet component for the sidebar */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-[400px] bg-[#18181B] border-l border-gray-800">
+          <SheetHeader>
+            <SheetTitle className="text-white">Resource Details</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            {selectedResource && (
+              <div className="text-gray-300">
+                <p>Resource URL: {selectedResource}</p>
+                {/* Add more resource details here as needed */}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
