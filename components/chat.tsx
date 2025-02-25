@@ -342,7 +342,7 @@ export function Chat() {
               />
               
               {/* Action buttons */}
-              <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
+              {/* <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white p-2">
                     <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -372,7 +372,7 @@ export function Chat() {
                     </svg>
                   </Button>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
