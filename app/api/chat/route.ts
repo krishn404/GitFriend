@@ -39,24 +39,14 @@ export async function POST(req: Request) {
     const { messages } = await req.json()
     const lastMessage = messages[messages.length - 1].content
 
-    // Detect if the message is asking for resources
-    const isResourceRequest =
-      lastMessage.toLowerCase().includes("resource") ||
-      lastMessage.toLowerCase().includes("learn") ||
-      lastMessage.toLowerCase().includes("tutorial") ||
-      lastMessage.toLowerCase().includes("guide")
-
-    // Detect if the message contains an error
-    const isErrorMessage =
-      lastMessage.toLowerCase().includes("error") ||
-      lastMessage.toLowerCase().includes("failed") ||
-      lastMessage.toLowerCase().includes("cannot")
-
+    // Detect if the message is asking for specific actions
     let prompt = lastMessage
-    if (isResourceRequest) {
-      prompt = `Please provide a structured list of learning resources for: ${lastMessage}`
-    } else if (isErrorMessage) {
-      prompt = `The user is experiencing the following Git error. Please analyze it and provide solutions with relevant resources:\n\n${lastMessage}`
+    if (lastMessage.toLowerCase().includes("trending repo")) {
+      prompt = "Please provide the current trending repositories on GitHub."
+    } else if (lastMessage.toLowerCase().includes("create repo")) {
+      prompt = "Please provide the steps to create a new repository on GitHub."
+    } else if (lastMessage.toLowerCase().includes("commands")) {
+      prompt = "Please provide a list of common Git commands."
     }
 
     if (!apiKey) {

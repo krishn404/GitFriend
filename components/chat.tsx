@@ -90,6 +90,12 @@ export function Chat() {
     )
   }
 
+  // Add this new function to handle the custom prompt
+  async function handleSubmitWithPrompt(prompt: string) {
+    setInput(prompt) // Set the input to the prompt
+    await handleSubmit(new Event('submit')) // Call the existing handleSubmit function
+  }
+
   return (
     <div className="min-h-screen bg-[#18181B] flex flex-col">
       {/* Top Navigation - Minimal header */}
@@ -166,11 +172,19 @@ export function Chat() {
                     <span>Trending Repo</span>
                   </Button>
                   
-                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md">
-                  <FileText className="w-4 h-4 mr-2" />
-                  <span>Create Repo</span>
+                  <Button 
+                    variant="ghost" 
+                    className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md"
+                    onClick={() => handleSubmitWithPrompt("Create a new repository")}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    <span>Create Repo</span>
                   </Button>
-                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md">
+                  <Button 
+                    variant="ghost" 
+                    className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md"
+                    onClick={() => handleSubmitWithPrompt("Provide all github commands")}
+                  >
                     <Code className="w-4 h-4 mr-2" />
                     <span>Commands</span>
                   </Button>
