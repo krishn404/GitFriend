@@ -23,7 +23,6 @@ export function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const userName = "Krishna" // This could be dynamic in a real app
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom when messages change
@@ -134,8 +133,8 @@ export function Chat() {
         <div className="w-full max-w-3xl space-y-4">
           {messages.length === 0 ? (
             <div className="text-center space-y-4 px-2 sm:px-4">
-              <h1 className="text-2xl sm:text-4xl font-semibold text-white">{getGreeting()}, {userName}.</h1>
-              <p className="text-lg sm:text-xl text-gray-400">How can I help you today?</p>
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white">{getGreeting()}</h1>
+              <p className="text-lg sm:text-xl text-gray-400">How can I help you with Git and GitHub today?</p>
               
               {/* New Input Area for welcome screen - Centered */}
               <div className="mt-8 w-full max-w-3xl mx-auto">
@@ -154,7 +153,7 @@ export function Chat() {
                   />
                   
                   {/* Action buttons */}
-                  <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
+                  {/* <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white p-2">
                         <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -184,7 +183,7 @@ export function Chat() {
                         </svg>
                       </Button>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 
                 {/* Feature buttons */}
