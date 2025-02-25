@@ -92,8 +92,30 @@ export function Chat() {
 
   // Add this new function to handle the custom prompt
   async function handleSubmitWithPrompt(prompt: string) {
-    setInput(prompt) // Set the input to the prompt
-    await handleSubmit(new Event('submit')) // Call the existing handleSubmit function
+    const userMessage = { role: "user" as const, content: prompt }
+    setMessages((prev) => [...prev, userMessage])
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
+      })
+
+      if (!response.ok) throw new Error("Failed to fetch response")
+
+      const text = await response.text()
+      setMessages((prev) => [...prev, { role: "assistant", content: text }])
+    } catch (error) {
+      console.error("Error:", error)
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, there was an error processing your request." },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
