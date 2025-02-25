@@ -1,20 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import { Search } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Search, Lightbulb, Upload, FileText, Zap, BarChart2, Image, Code } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import ReactMarkdown from "react-markdown"
 import { CodeBlock } from "./code-block"
-import { motion } from "framer-motion"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 
 interface Message {
   role: "user" | "assistant"
   content: string
 }
 
-// Add this type definition for the code component props
 interface CodeProps {
   node?: any
   inline?: boolean
@@ -26,9 +23,17 @@ export function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isResourceOpen, setIsResourceOpen] = useState(false)
-  const [selectedResource, setSelectedResource] = useState<string | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const userName = "Krishna" // This could be dynamic in a real app
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to bottom when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -61,39 +66,116 @@ export function Chat() {
     }
   }
 
-  const handleResourceClick = (href: string | undefined) => {
-    if (href) {
-      setSelectedResource(href)
-      setSheetOpen(true)
-    }
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "Good morning"
+    if (hour < 18) return "Good afternoon"
+    return "Good evening"
+  }
+
+  // Convert URLs in text to badge-style links
+  const LinkRenderer = ({ href, children }: { href?: string, children: React.ReactNode }) => {
+    if (!href) return <>{children}</>
+    
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800 text-blue-400 hover:bg-gray-700 transition-colors text-xs"
+      >
+        {children}
+      </a>
+    )
   }
 
   return (
     <div className="min-h-screen bg-[#18181B] flex flex-col">
-      {/* Top Navigation - Make it more compact on mobile */}
-      <header className="p-4 sm:p-4">
+      {/* Top Navigation - Minimal header */}
+      <header className="p-4 sm:p-4 fixed top-0 left-0 right-0 z-10 bg-[#18181B]">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-lg sm:text-xl font-semibold text-white">Git Friend</span>
           </div>
-          {/* <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </div> */}
         </div>
       </header>
 
-      {/* Main Chat Area - Adjust padding for mobile */}
-      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-y-auto w-full">
-        <div className="w-full max-w-3xl space-y-4 mb-24">
+      {/* Main Chat Area - Scrollable content */}
+      <div className={`flex-1 flex flex-col items-center p-2 sm:p-4 w-full mt-14 ${messages.length > 0 ? 'mb-32 overflow-y-auto' : 'justify-center'}`}>
+        <div className="w-full max-w-3xl space-y-4">
           {messages.length === 0 ? (
             <div className="text-center space-y-4 px-2 sm:px-4">
-              <h1 className="text-2xl sm:text-4xl font-semibold text-white break-words">Welcome to Git Friend</h1>
-              <p className="text-lg sm:text-xl text-gray-400 break-words">Ask me anything about Git & GitHub!</p>
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white">{getGreeting()}, {userName}.</h1>
+              <p className="text-lg sm:text-xl text-gray-400">How can I help you today?</p>
+              
+              {/* New Input Area for welcome screen - Centered */}
+              <div className="mt-8 w-full max-w-3xl mx-auto">
+                <div className="relative rounded-xl bg-[#27272A] p-2">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="What do you want to know?"
+                    className="w-full bg-transparent border-0 focus:ring-0 text-gray-300 placeholder-gray-500 resize-none py-2 px-2 min-h-[48px]"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSubmit(e)
+                      }
+                    }}
+                  />
+                  
+                  {/* Action buttons */}
+                  <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white p-2">
+                        <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                      <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                        <Search className="w-4 h-4" />
+                        <span className="text-xs">DeepSearch</span>
+                      </Button>
+                      <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                        <Lightbulb className="w-4 h-4" />
+                        <span className="text-xs">Think</span>
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                        <span className="text-xs">Grok 3</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-gray-400 hover:text-white p-2"
+                        onClick={handleSubmit}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m5 12 7-7 7 7"></path>
+                          <path d="M12 19V5"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Feature buttons */}
+                <div className="flex flex-wrap justify-center gap-3 mt-6">
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md">
+                    <FileText className="w-4 h-4 mr-2" />
+                    <span>Trending Repo</span>
+                  </Button>
+                  
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md">
+                  <FileText className="w-4 h-4 mr-2" />
+                  <span>Create Repo</span>
+                  </Button>
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-2 rounded-md">
+                    <Code className="w-4 h-4 mr-2" />
+                    <span>Commands</span>
+                  </Button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="space-y-6 px-2 sm:px-0">
@@ -101,12 +183,10 @@ export function Chat() {
                 <div key={i} className="flex gap-3 min-w-0">
                   {message.role === "assistant" ? (
                     <>
-                      <div className="w-6 h-6 mt-1 flex-shrink-0">
-                        <div className="w-6 h-6">
-                          {/* Assistant icon here */}
-                        </div>
-                      </div>
                       <div className="prose dark:prose-invert max-w-none flex-1 overflow-hidden">
+                        {/* Add content counters when showing results */}
+
+                        
                         <ReactMarkdown
                           components={{
                             code({ inline, className, children, ...props }: CodeProps) {
@@ -150,19 +230,15 @@ export function Chat() {
                               </ul>
                             ),
                             li: ({ children }) => (
-                              <li className="text-gray-300 leading-7">
-                                {children}
+                              <li className="text-gray-300 leading-7 flex items-start">
+                                <span className="inline-block w-2 h-2 bg-gray-400 rounded-full mt-3 mr-3 flex-shrink-0"></span>
+                                <span className="flex-1">{children}</span>
                               </li>
                             ),
                             a: ({ href, children }) => (
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-300 hover:bg-gray-700 transition-colors break-all mb-2"
-                              >
+                              <LinkRenderer href={href}>
                                 {children}
-                              </a>
+                              </LinkRenderer>
                             ),
                             strong: ({ children }) => (
                               <strong className="font-semibold text-white">
@@ -173,83 +249,99 @@ export function Chat() {
                         >
                           {message.content}
                         </ReactMarkdown>
-                        
-                        {/* Resource badges at the bottom of the message */}
-
                       </div>
                     </>
                   ) : (
-                    <div className="w-6 h-6 mt-1 flex-shrink-0">
-                      {/* User icon here */}
+                    <div className="bg-gray-800 rounded-xl py-2 px-4 self-end text-white w-fit max-w-[80%] ml-auto">
+                      {message.content}
                     </div>
                   )}
                 </div>
               ))}
+              <div ref={messagesEndRef} />
+              {/* Add extra padding at the bottom to ensure content is not hidden */}
+              <div className="h-4"></div>
             </div>
           )}
           {isLoading && (
             <div className="flex gap-3">
-              <div className="w-6 h-6 mt-1 flex-shrink-0">
-                <div className="w-6 h-6">
-                  {/* Loading spinner icon */}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="animate-spin">
-                  {/* Loading spinner */}
-                </div>
-                Thinking...
+              <div className="animate-pulse flex items-center gap-2 text-gray-400">
+                <span>Thinking...</span>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Input Area - Adjust padding and font size for mobile */}
-      <div className="fixed bottom-0 left-0 right-0 p-2 sm:p-4 bg-[#18181B] border-t border-gray-800">
-        <div className="max-w-3xl mx-auto">
-          <div className="relative">
-            <div className="absolute left-3 sm:left-4 top-3 flex items-center gap-2">
-              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-            </div>
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about Git commands, workflows, or best practices..."
-              className="w-full bg-[#27272A] rounded-xl pl-10 sm:pl-12 py-3 min-h-[48px] text-sm sm:text-base resize-none border-0 focus:ring-0 text-gray-300 placeholder:text-gray-500"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSubmit(e)
-                }
-              }}
-            />
-          </div>
+      {/* Footer - Only show on welcome screen */}
+      {messages.length === 0 && (
+        <div className="text-center p-4 text-xs sm:text-sm text-gray-500">
+          Developed by{" "}
+          <a href="https://github.com/krishn404" className="text-gray-400 hover:text-white">
+            Krishna
+          </a>{" "}
+          Open Source at{" "}
+          <a href="https://github.com/krishn404/gitchat" className="text-gray-400 hover:text-white">
+            Git Friend
+          </a>
+          .
+        </div>
+      )}
 
-          <div className="text-center mt-2 sm:mt-4 text-xs sm:text-sm text-gray-500">
-            Developed by{" "}
-            <a href="https://github.com/krishn404" className="text-gray-400 hover:text-white">Krishna</a> Open Source at{" "}
-            <a href="https://github.com/krishn404/gitchat" className="text-gray-400 hover:text-white">Git Friend</a>.
+      {/* Sticky Input Area - Only when conversations are active */}
+      {messages.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#18181B] border-t border-gray-800 p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative rounded-xl bg-[#27272A] p-2">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="How can Git Friend help?"
+                className="w-full bg-transparent border-0 focus:ring-0 text-gray-300 placeholder-gray-500 resize-none py-2 px-2 min-h-[48px] max-h-32"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+              />
+              
+              {/* Action buttons */}
+              <div className="flex justify-between items-center px-2 py-2 border-t border-gray-700 mt-2">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white p-2">
+                    <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                    <Search className="w-4 h-4" />
+                    <span className="text-xs">DeepSearch</span>
+                  </Button>
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                    <Lightbulb className="w-4 h-4" />
+                    <span className="text-xs">Think</span>
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" className="text-gray-400 hover:text-white flex items-center gap-1 px-3 py-1 rounded-full bg-gray-800">
+                    <span className="text-xs">Grok 3</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-gray-400 hover:text-white p-2"
+                    onClick={handleSubmit}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m5 12 7-7 7 7"></path>
+                      <path d="M12 19V5"></path>
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Add a Sheet component for the sidebar */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-[400px] bg-[#18181B] border-l border-gray-800">
-          <SheetHeader>
-            <SheetTitle className="text-white">Resource Details</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            {selectedResource && (
-              <div className="text-gray-300">
-                <p>Resource URL: {selectedResource}</p>
-                {/* Add more resource details here as needed */}
-              </div>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+      )}
     </div>
   )
 }
