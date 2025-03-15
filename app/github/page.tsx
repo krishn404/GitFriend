@@ -1,7 +1,7 @@
 import { GitHubProfile } from "@/components/github-profile"
 import { CommitGenerator } from "@/components/commit-generator"
 import { RepoAnalyzer } from "@/components/repo-analyzer"
-import { ThemeToggle } from "@/components/theme-toggle"
+// import { ThemeToggle } from "@/components/theme-toggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GitBranch, User, FileCode, Github, ArrowLeft } from 'lucide-react'
 import Link from "next/link"
@@ -20,7 +20,7 @@ export default function GitHubPage() {
             </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">GitHub Tools</h1>
           </div>
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
         </div>
         
         <div className="relative">
