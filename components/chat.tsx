@@ -1,13 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
-import { FileText, Code, Github, Send, Loader2 } from "lucide-react"
+import { FileText, Code, Github, Send, Loader2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import ReactMarkdown from "react-markdown"
 import { CodeBlock } from "./code-block"
+import { useRouter, useParams } from "next/navigation"
+import { v4 as uuidv4 } from "uuid"
+import { ChatHistory } from "./chat-history"
+import { useAuth } from "@/contexts/auth-context"
+import Link from "next/link"
 
 // Add these imports at the top
 import { parseGitHubLink } from "@/lib/github-link-parser"
@@ -17,6 +21,7 @@ import { RepoAnalyzer } from "@/components/repo-analyzer"
 interface Message {
   role: "user" | "assistant"
   content: string
+  timestamp?: Date
 }
 
 interface CodeProps {
@@ -26,17 +31,97 @@ interface CodeProps {
   children: React.ReactNode
 }
 
-export function Chat() {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatProps {
+  initialSessionId?: string
+  initialMessages?: Message[]
+}
+
+export function Chat({ initialSessionId, initialMessages = [] }: ChatProps) {
+  const { user, logout } = useAuth()
+  const [sessionId, setSessionId] = useState<string>(initialSessionId || uuidv4())
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [loadingDots, setLoadingDots] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [animatedText, setAnimatedText] = useState("")
   const [isAnimating, setIsAnimating] = useState(false)
+  const [sessionTitle, setSessionTitle] = useState<string>("")
+  const router = useRouter()
+  const params = useParams()
 
   // Add this state after the other state variables
   const [githubLink, setGithubLink] = useState<{ type: "profile" | "repository"; value: string } | null>(null)
+
+  // Load existing chat session if sessionId is provided
+  useEffect(() => {
+    if (params?.sessionId && !initialMessages.length) {
+      fetchChatSession(params.sessionId as string)
+    }
+  }, [params?.sessionId, initialMessages.length])
+
+  const fetchChatSession = async (id: string) => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/chat-history/${id}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch chat session")
+      }
+
+      setSessionId(id)
+      setMessages(data.session.messages)
+      setSessionTitle(data.session.title)
+    } catch (err) {
+      console.error("Error fetching chat session:", err)
+      // Redirect to home if session not found
+      router.push("/")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Save chat session to database
+  const saveChatSession = async (newMessages: Message[]) => {
+    try {
+      if (newMessages.length === 0) return
+
+      const title =
+        sessionTitle || newMessages[0].content.substring(0, 30) + (newMessages[0].content.length > 30 ? "..." : "")
+
+      const method = initialSessionId ? "PUT" : "POST"
+      const url = initialSessionId ? `/api/chat-history/${sessionId}` : "/api/chat-history"
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          messages: newMessages.map((msg) => ({
+            ...msg,
+            timestamp: msg.timestamp || new Date(),
+          })),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save chat session")
+      }
+
+      if (!initialSessionId) {
+        // Update URL with new session ID without reloading the page
+        window.history.pushState({}, "", `/chat/${data.session.sessionId}`)
+        setSessionId(data.session.sessionId)
+      }
+
+      setSessionTitle(data.session.title || title)
+    } catch (err) {
+      console.error("Error saving chat session:", err)
+    }
+  }
 
   // Auto-scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -62,42 +147,32 @@ export function Chat() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    const userMessage = { role: "user" as const, content: input }
-    setMessages((prev) => [...prev, userMessage])
+    const userMessage = { role: "user" as const, content: input, timestamp: new Date() }
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
     setInput("")
     setIsLoading(true)
-    setGithubLink(null)
+    setGithubLink(null) // Reset GitHub link
 
-    // Check for GitHub links first
+    // Save the user message to the database
+    await saveChatSession(updatedMessages)
+
+    // Modify the handleSubmit function to detect GitHub links
+    // Add this after setting userMessage but before the fetch call:
     const parsedLink = parseGitHubLink(input)
     if (parsedLink) {
       if (parsedLink.type === "profile") {
         setGithubLink({ type: "profile", value: parsedLink.owner })
-        // Add a simple confirmation message
-        setMessages((prev) => [...prev, { 
-          role: "assistant", 
-          content: `Analyzing GitHub profile for ${parsedLink.owner}...` 
-        }])
-        setIsLoading(false)
-        return // Don't proceed with AI chat
       } else if (parsedLink.type === "repository") {
         setGithubLink({ type: "repository", value: `${parsedLink.owner}/${parsedLink.repo}` })
-        // Add a simple confirmation message
-        setMessages((prev) => [...prev, { 
-          role: "assistant", 
-          content: `Analyzing repository ${parsedLink.owner}/${parsedLink.repo}...` 
-        }])
-        setIsLoading(false)
-        return // Don't proceed with AI chat
       }
     }
 
-    // Continue with normal chat for non-GitHub link messages
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: updatedMessages }),
       })
 
       if (!response.ok) throw new Error("Failed to fetch response")
@@ -107,7 +182,9 @@ export function Chat() {
       setIsAnimating(true)
 
       // Add empty assistant message first
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }])
+      const assistantMessage = { role: "assistant" as const, content: "", timestamp: new Date() }
+      const newMessages = [...updatedMessages, assistantMessage]
+      setMessages(newMessages)
 
       // Animate the text word by word
       const words = text.split(/(\s+)/)
@@ -121,13 +198,29 @@ export function Chat() {
         scrollToBottom()
       }
 
+      // Save the completed conversation to the database
+      const finalMessages = [
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: text,
+          timestamp: new Date(),
+        },
+      ]
+      setMessages(finalMessages)
+      await saveChatSession(finalMessages)
+
       setIsAnimating(false)
     } catch (error) {
       console.error("Error:", error)
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, there was an error processing your request." },
-      ])
+      const errorMessage = {
+        role: "assistant",
+        content: "Sorry, there was an error processing your request.",
+        timestamp: new Date(),
+      }
+      const errorMessages = [...updatedMessages, errorMessage]
+      setMessages(errorMessages)
+      await saveChatSession(errorMessages)
     } finally {
       setIsLoading(false)
     }
@@ -159,16 +252,20 @@ export function Chat() {
 
   // Add this new function to handle the custom prompt
   async function handleSubmitWithPrompt(prompt: string) {
-    const userMessage = { role: "user" as const, content: prompt }
-    setMessages((prev) => [...prev, userMessage])
+    const userMessage = { role: "user" as const, content: prompt, timestamp: new Date() }
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
     setIsLoading(true)
     setGithubLink(null) // Reset GitHub link
+
+    // Save the user message to the database
+    await saveChatSession(updatedMessages)
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: updatedMessages }),
       })
 
       if (!response.ok) throw new Error("Failed to fetch response")
@@ -178,7 +275,9 @@ export function Chat() {
       setIsAnimating(true)
 
       // Add empty assistant message first
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }])
+      const assistantMessage = { role: "assistant" as const, content: "", timestamp: new Date() }
+      const newMessages = [...updatedMessages, assistantMessage]
+      setMessages(newMessages)
 
       // Animate the text word by word
       const words = text.split(/(\s+)/)
@@ -192,13 +291,29 @@ export function Chat() {
         scrollToBottom()
       }
 
+      // Save the completed conversation to the database
+      const finalMessages = [
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: text,
+          timestamp: new Date(),
+        },
+      ]
+      setMessages(finalMessages)
+      await saveChatSession(finalMessages)
+
       setIsAnimating(false)
     } catch (error) {
       console.error("Error:", error)
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, there was an error processing your request." },
-      ])
+      const errorMessage = {
+        role: "assistant",
+        content: "Sorry, there was an error processing your request.",
+        timestamp: new Date(),
+      }
+      const errorMessages = [...updatedMessages, errorMessage]
+      setMessages(errorMessages)
+      await saveChatSession(errorMessages)
     } finally {
       setIsLoading(false)
     }
@@ -206,13 +321,37 @@ export function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#121212] to-[#1a1a1a] flex flex-col">
+      {/* Chat History Sidebar */}
+      <ChatHistory />
+
       {/* Top Navigation - Minimal header */}
       <header className="p-4 sm:p-4 fixed top-0 left-0 right-0 z-10 bg-gradient-to-b from-[#121212] to-transparent">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-12">
             <Github className="h-5 w-5 text-white" />
             <span className="text-lg sm:text-xl font-semibold text-white">Git Friend</span>
           </div>
+
+          {/* Add profile link */}
+          {user && (
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 rounded-full transition-colors"
+            >
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL || "/placeholder.svg"}
+                  alt={user.displayName || "User"}
+                  className="w-6 h-6 rounded-full"
+                />
+              ) : (
+                <User className="h-4 w-4 text-gray-300" />
+              )}
+              <span className="text-sm text-gray-300 hidden sm:inline">
+                {user.displayName?.split(" ")[0] || "Profile"}
+              </span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -227,7 +366,9 @@ export function Chat() {
                 <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full filter blur-3xl opacity-20"></div>
                 <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/10 rounded-full filter blur-3xl opacity-20"></div>
 
-                <h1 className="text-3xl sm:text-4xl font-bold text-white">{getGreeting()}</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white">
+                  {getGreeting()}, {user?.displayName?.split(" ")[0] || "there"}
+                </h1>
                 <p className="text-lg sm:text-xl text-gray-400 mt-2">How can I help you with Git and GitHub today?</p>
               </div>
 

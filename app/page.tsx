@@ -1,13 +1,13 @@
 import { Chat } from "@/components/chat"
-import { ThemeToggle } from "@/components/theme-toggle"
+import ProtectedRoute from "@/components/protected-route"
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <div className="absolute top-4 right-4">
-        {/* <ThemeToggle /> */}
-      </div>
-      <Chat />
-    </main>
+    <ProtectedRoute>
+      <main className="min-h-screen">
+        <Chat />
+      </main>
+    </ProtectedRoute>
   )
 }
+
