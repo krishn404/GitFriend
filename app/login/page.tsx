@@ -14,10 +14,28 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
+    // Debug log to help you see what's happening
+    console.log("Auth state changed:", { user, loading })
+    
     if (user && !loading) {
+      console.log("Redirecting to /chat")
       router.push("/chat")
     }
   }, [user, loading, router])
+
+  // Handle GitHub sign in separately to ensure redirection
+  const handleGithubSignIn = async () => {
+    try {
+      await signInWithGithub()
+      // If we reached here and have a user, redirect
+      // This provides a fallback in case the effect doesn't trigger
+      if (useAuth().user) {
+        router.push("/chat")
+      }
+    } catch (error) {
+      console.error("GitHub sign in error:", error)
+    }
+  }
 
   if (loading) {
     return (
@@ -171,7 +189,7 @@ export default function LoginPage() {
               </Button>
             </motion.div>
 
-            {/* <motion.div
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.5 }}
@@ -179,13 +197,13 @@ export default function LoginPage() {
               whileTap={{ scale: 0.97 }}
             >
               <Button
-                onClick={signInWithGithub}
+                onClick={handleGithubSignIn}
                 className="w-full h-12 flex items-center justify-center gap-3 rounded-xl transition-all shadow-sm"
               >
                 <Github className="h-5 w-5" />
                 <span className="font-medium">Sign in with GitHub</span>
               </Button>
-            </motion.div> */}
+            </motion.div>
           </div>
 
           <motion.div
@@ -201,4 +219,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
