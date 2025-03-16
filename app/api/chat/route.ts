@@ -1,5 +1,7 @@
 import { groq } from "@ai-sdk/groq"
 import { generateText } from "ai"
+import { Chat } from "@/models/chat"
+import mongoose from "mongoose"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -18,9 +20,28 @@ For Git/GitHub questions:
 
 const apiKey = process.env.GROQ_API_KEY
 
+// Connect to MongoDB
+async function connectDB() {
+  if (mongoose.connections[0].readyState) return
+  
+  const MONGODB_URI = process.env.MONGODB_URI
+  if (!MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined')
+  }
+  
+  await mongoose.connect(MONGODB_URI)
+}
+
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json()
+    const { messages, chatId, userId } = await req.json()
+    
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response("Invalid messages format", { status: 400 })
+    }
+
+    await connectDB()
+    
     const lastMessage = messages[messages.length - 1].content
 
     // Check if message is not related to Git/GitHub
@@ -48,17 +69,54 @@ export async function POST(req: Request) {
     }
 
     if (!apiKey) {
-      return new Response("API key is missing", { status: 500 })
+      console.error("GROQ API key is missing")
+      return new Response("Configuration error", { status: 500 })
     }
 
     const { text } = await generateText({
       model: groq("mixtral-8x7b-32768"),
       system: SYSTEM_PROMPT,
-      prompt,
+      prompt: lastMessage,
     })
+
+    // Save chat to MongoDB
+    try {
+      const chatMessage = {
+        role: "assistant" as const,
+        content: text,
+        timestamp: new Date()
+      }
+
+      if (chatId) {
+        await Chat.findByIdAndUpdate(chatId, {
+          $push: { messages: chatMessage },
+          $set: { updatedAt: new Date() }
+        })
+      } else {
+        const title = lastMessage.substring(0, 50) + (lastMessage.length > 50 ? "..." : "")
+        await Chat.create({
+          userId,
+          title,
+          messages: [
+            ...messages.map(m => ({
+              ...m,
+              timestamp: new Date()
+            })),
+            chatMessage
+          ]
+        })
+      }
+    } catch (dbError) {
+      console.error("MongoDB error:", dbError)
+      // Continue even if save fails - at least return the AI response
+    }
 
     return new Response(text)
   } catch (error) {
-    return new Response("Error processing your request", { status: 500 })
+    console.error("Chat error:", error)
+    return new Response(
+      "Error processing your request. Please try again.", 
+      { status: 500 }
+    )
   }
 }

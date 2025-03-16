@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { connectToDatabase, ChatSession } from "@/models/chat"
+import { connectToDatabase, Chat } from "@/models/chat"
 
 // Get a specific chat session
 export async function GET(req: Request, { params }: { params: { sessionId: string } }) {
@@ -8,13 +8,13 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
 
     await connectToDatabase()
 
-    const session = await ChatSession.findOne({ sessionId }).lean()
+    const chat = await Chat.findById(sessionId).lean()
 
-    if (!session) {
+    if (!chat) {
       return NextResponse.json({ error: "Chat session not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ session })
+    return NextResponse.json({ session: chat })
   } catch (error) {
     console.error("Error fetching chat session:", error)
     return NextResponse.json({ error: "Failed to fetch chat session" }, { status: 500 })
@@ -29,25 +29,25 @@ export async function PUT(req: Request, { params }: { params: { sessionId: strin
 
     await connectToDatabase()
 
-    const session = await ChatSession.findOne({ sessionId })
+    const chat = await Chat.findById(sessionId)
 
-    if (!session) {
+    if (!chat) {
       return NextResponse.json({ error: "Chat session not found" }, { status: 404 })
     }
 
     if (title) {
-      session.title = title
+      chat.title = title
     }
 
     if (messages) {
-      session.messages = messages
+      chat.messages = messages
     }
 
-    session.updatedAt = new Date()
+    chat.updatedAt = new Date()
 
-    await session.save()
+    await chat.save()
 
-    return NextResponse.json({ session })
+    return NextResponse.json({ session: chat })
   } catch (error) {
     console.error("Error updating chat session:", error)
     return NextResponse.json({ error: "Failed to update chat session" }, { status: 500 })
@@ -61,9 +61,9 @@ export async function DELETE(req: Request, { params }: { params: { sessionId: st
 
     await connectToDatabase()
 
-    const result = await ChatSession.deleteOne({ sessionId })
+    const result = await Chat.findByIdAndDelete(sessionId)
 
-    if (result.deletedCount === 0) {
+    if (!result) {
       return NextResponse.json({ error: "Chat session not found" }, { status: 404 })
     }
 
@@ -73,4 +73,3 @@ export async function DELETE(req: Request, { params }: { params: { sessionId: st
     return NextResponse.json({ error: "Failed to delete chat session" }, { status: 500 })
   }
 }
-

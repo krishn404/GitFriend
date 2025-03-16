@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Check, Copy, Search } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Check, Search, X, Code } from "lucide-react"
+import { motion } from "framer-motion"
+import toast, { Toaster } from "react-hot-toast"
 
 interface Emoji {
   emoji: string
@@ -16,21 +17,21 @@ interface Emoji {
 
 // Extended categories to include People and Nature from the markdown files
 const CATEGORIES = [
-  "all", 
-  "added", 
-  "fixed", 
-  "improved", 
-  "removed", 
-  "security", 
-  "config", 
-  "docs", 
-  "ui", 
+  "all",
+  "added",
+  "fixed",
+  "improved",
+  "removed",
+  "security",
+  "config",
+  "docs",
+  "ui",
   "other",
   "people",
   "nature",
   "objects",
   "places",
-  "symbols"
+  "symbols",
 ]
 
 // Emoji data based on GitHub supported emojis, now including all emojis from the markdown files
@@ -123,7 +124,7 @@ const EMOJIS: Emoji[] = [
   { emoji: "🐧", code: ":penguin:", description: "Fix something on Linux", category: "other" },
   { emoji: "🤖", code: ":robot:", description: "Fix something on Android", category: "other" },
   { emoji: "🍏", code: ":green_apple:", description: "Fix something on iOS", category: "other" },
-  
+
   // People Emojis (from 01. Emojis - People.md)
   { emoji: "😊", code: ":smile:", description: "Smile face", category: "people" },
   { emoji: "😄", code: ":laughing:", description: "Laughing face", category: "people" },
@@ -138,8 +139,18 @@ const EMOJIS: Emoji[] = [
   { emoji: "😌", code: ":relieved:", description: "Relieved face", category: "people" },
   { emoji: "😁", code: ":grin:", description: "Grinning face", category: "people" },
   { emoji: "😉", code: ":wink:", description: "Winking face", category: "people" },
-  { emoji: "😜", code: ":stuck_out_tongue_winking_eye:", description: "Face with stuck-out tongue and winking eye", category: "people" },
-  { emoji: "😝", code: ":stuck_out_tongue_closed_eyes:", description: "Face with stuck-out tongue and closed eyes", category: "people" },
+  {
+    emoji: "😜",
+    code: ":stuck_out_tongue_winking_eye:",
+    description: "Face with stuck-out tongue and winking eye",
+    category: "people",
+  },
+  {
+    emoji: "😝",
+    code: ":stuck_out_tongue_closed_eyes:",
+    description: "Face with stuck-out tongue and closed eyes",
+    category: "people",
+  },
   { emoji: "😀", code: ":grinning:", description: "Grinning face", category: "people" },
   { emoji: "💋", code: ":kiss:", description: "Kiss mark", category: "people" },
   { emoji: "👋", code: ":wave:", description: "Waving hand", category: "people" },
@@ -179,7 +190,7 @@ const EMOJIS: Emoji[] = [
   { emoji: "👼", code: ":angel:", description: "Baby angel", category: "people" },
   { emoji: "💀", code: ":skull:", description: "Skull", category: "people" },
   { emoji: "👻", code: ":ghost:", description: "Ghost", category: "people" },
-  
+
   // Nature Emojis (from 02. Emojis - Nature.md)
   { emoji: "☀️", code: ":sunny:", description: "Sun", category: "nature" },
   { emoji: "☔", code: ":umbrella:", description: "Umbrella with rain drops", category: "nature" },
@@ -289,107 +300,427 @@ const EMOJIS: Emoji[] = [
   { emoji: "🔓", code: ":unlock:", description: "Unlock", category: "symbols" },
   { emoji: "💲", code: ":heavy_dollar_sign:", description: "Heavy dollar sign", category: "symbols" },
   { emoji: "✨", code: ":sparkles:", description: "Sparkles", category: "symbols" },
-  { emoji: "💯", code: ":100:", description: "Hundred points", category: "symbols" }
+  { emoji: "💯", code: ":100:", description: "Hundred points", category: "symbols" },
 ]
 
+// Replace the entire CommitEmojis component with this enhanced version
 export function CommitEmojis() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
   const [copiedEmoji, setCopiedEmoji] = useState<string | null>(null)
+  const [hoveredEmoji, setHoveredEmoji] = useState<string | null>(null)
 
   const filteredEmojis = EMOJIS.filter((emoji) => {
     const matchesSearch =
       emoji.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emoji.code.toLowerCase().includes(searchTerm.toLowerCase())
+      emoji.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emoji.emoji.includes(searchTerm.toLowerCase())
 
     const matchesCategory = activeCategory === "all" || emoji.category === activeCategory
 
     return matchesSearch && matchesCategory
   })
 
-  const copyToClipboard = (text: string, emojiCode: string) => {
+  const copyToClipboard = (text: string, type: "emoji" | "code") => {
     navigator.clipboard.writeText(text)
-    setCopiedEmoji(emojiCode)
-    setTimeout(() => setCopiedEmoji(null), 2000)
+
+    // Show toast notification with react-hot-toast
+    if (type === "emoji") {
+      toast.custom(
+        (t) => (
+          <div
+            className={`${t.visible ? "animate-enter" : "animate-leave"} max-w-md w-full bg-background shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">{text}</div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-foreground">Emoji copied!</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{text} has been copied to your clipboard</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-border">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 focus:outline-none"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 2000 },
+      )
+    } else {
+      toast.custom(
+        (t) => (
+          <div
+            className={`${t.visible ? "animate-enter" : "animate-leave"} max-w-md w-full bg-background shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Code className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-foreground">Code copied!</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    <code className="bg-muted px-1 py-0.5 rounded">{text}</code> has been copied to your clipboard
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-border">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 focus:outline-none"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 2000 },
+      )
+    }
+
+    // Also set the copied state for visual feedback in the UI
+    setCopiedEmoji(`${text}-${type}`)
+    setTimeout(() => setCopiedEmoji(null), 1000)
   }
+
+  // Group categories for better organization
+  const categoryGroups = {
+    main: ["all", "added", "fixed", "improved", "removed"],
+    secondary: ["security", "config", "docs", "ui", "other"],
+    emoji: ["people", "nature", "objects", "places", "symbols"],
+  }
+
+  // Get popular emojis for quick access
+  const popularEmojis = [
+    EMOJIS.find((e) => e.code === ":sparkles:"),
+    EMOJIS.find((e) => e.code === ":bug:"),
+    EMOJIS.find((e) => e.code === ":rocket:"),
+    EMOJIS.find((e) => e.code === ":fire:"),
+    EMOJIS.find((e) => e.code === ":memo:"),
+    EMOJIS.find((e) => e.code === ":art:"),
+  ].filter(Boolean) as Emoji[]
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-foreground">Emoji Selector</h3>
-          <p className="text-sm text-muted-foreground">Click emoji to copy emoji, click code to copy code</p>
-        </div>
+      {/* Toast container for react-hot-toast */}
+      <Toaster position="top-right" />
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Input
-            placeholder="Search emojis..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-background border-input"
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        </div>
+      {/* Header Card */}
+      <div className="bg-gradient-to-br from-primary/5 via-card to-secondary/5 border border-border rounded-xl overflow-hidden shadow-sm">
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+                  <span className="text-3xl">✨</span>
+                  <span>Git Commit Emojis</span>
+                </h2>
+                <p className="text-muted-foreground mt-2 max-w-xl">
+                  Enhance your commit messages with expressive emojis. Click on any emoji to copy it to your clipboard.
+                </p>
+              </div>
+            </div>
 
-        {/* Category Tabs */}
-        <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-6">
-          <TabsList className="w-full flex flex-wrap h-auto bg-muted/50 p-1 rounded-lg">
-            {CATEGORIES.map((category) => (
-              <TabsTrigger
-                key={category}
-                value={category}
-                className="flex-1 min-w-[80px] capitalize py-1.5 data-[state=active]:bg-background rounded-md transition-all text-xs sm:text-sm"
-              >
-                {category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        {/* Updated Emoji Grid */}
-        {filteredEmojis.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {filteredEmojis.map((emoji) => (
-              <Card
-                key={emoji.code}
-                className="bg-muted/30 border-border/50 hover:bg-muted/50 transition-colors group overflow-hidden"
-              >
-                <div className="p-3 flex flex-col items-center text-center relative">
-                  <div 
-                    className="text-2xl mb-2 cursor-pointer hover:scale-125 transition-all duration-200 ease-in-out"
-                    onClick={() => copyToClipboard(emoji.emoji, `${emoji.code}-emoji`)}
-                  >
-                    {emoji.emoji}
-                  </div>
-                  <div 
-                    className="text-xs font-mono text-primary mb-1 cursor-pointer group/code relative"
-                    onClick={() => copyToClipboard(emoji.code, `${emoji.code}-code`)}
-                  >
-                    <span className="relative z-10 hover:text-white transition-colors duration-200">
-                      {emoji.code}
-                    </span>
-                    <span className="absolute inset-0 bg-primary scale-x-0 group-hover/code:scale-x-100 transition-transform duration-200 origin-left rounded-sm -z-0" />
-                  </div>
-                  <div className="text-xs text-muted-foreground line-clamp-1">{emoji.description}</div>
-                  {copiedEmoji === `${emoji.code}-emoji` && (
-                    <div className="absolute top-0 inset-x-0 bg-green-500/10 text-green-500 text-xs py-1 animate-in fade-in slide-in-from-top duration-300">
-                      Copied emoji!
-                    </div>
-                  )}
-                  {copiedEmoji === `${emoji.code}-code` && (
-                    <div className="absolute top-0 inset-x-0 bg-green-500/10 text-green-500 text-xs py-1 animate-in fade-in slide-in-from-top duration-300">
-                      Copied code!
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+            {/* Quick Access */}
+            <div className="flex flex-wrap gap-2">
+              {popularEmojis.map((emoji) => (
+                <motion.button
+                  key={emoji.code}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-background/80 backdrop-blur-sm hover:bg-background border border-border/50 rounded-full text-sm transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => copyToClipboard(emoji.emoji, "emoji")}
+                >
+                  <span className="text-lg">{emoji.emoji}</span>
+                  <span className="font-medium">{emoji.description}</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12 text-muted-foreground">No emojis found matching your search</div>
-        )}
+        </div>
+      </div>
+
+      {/* Main Content Card */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+        <div className="border-b border-border bg-muted/30 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 className="text-lg font-medium text-foreground">Browse Emojis</h3>
+
+            {/* Search */}
+            <div className="relative w-full sm:w-64 md:w-80">
+              <Input
+                placeholder="Search emojis..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 bg-background/80 backdrop-blur-sm border-input focus-visible:ring-primary/20"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSearchTerm("")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6">
+          {/* Category Tabs */}
+          <div className="mb-6">
+            <div className="text-xs font-medium text-muted-foreground mb-2">Categories</div>
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-1.5">
+                {categoryGroups.main.map((category) => (
+                  <Button
+                    key={category}
+                    variant={activeCategory === category ? "default" : "outline"}
+                    size="sm"
+                    className={`h-8 rounded-full text-xs capitalize ${
+                      activeCategory === category
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-background/80 text-foreground"
+                    }`}
+                    onClick={() => setActiveCategory(category)}
+                  >
+                    {category === "all" ? "All Emojis" : category}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {categoryGroups.secondary.map((category) => (
+                  <Button
+                    key={category}
+                    variant={activeCategory === category ? "default" : "outline"}
+                    size="sm"
+                    className={`h-8 rounded-full text-xs capitalize ${
+                      activeCategory === category
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-background/80 text-foreground"
+                    }`}
+                    onClick={() => setActiveCategory(category)}
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {categoryGroups.emoji.map((category) => (
+                  <Button
+                    key={category}
+                    variant={activeCategory === category ? "default" : "outline"}
+                    size="sm"
+                    className={`h-8 rounded-full text-xs capitalize ${
+                      activeCategory === category
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-background/80 text-foreground"
+                    }`}
+                    onClick={() => setActiveCategory(category)}
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm text-muted-foreground">
+              {filteredEmojis.length} {filteredEmojis.length === 1 ? "emoji" : "emojis"} found
+              {activeCategory !== "all" && ` in "${activeCategory}"`}
+              {searchTerm && ` matching "${searchTerm}"`}
+            </div>
+
+            {(activeCategory !== "all" || searchTerm) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  setSearchTerm("")
+                  setActiveCategory("all")
+                }}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear filters
+              </Button>
+            )}
+          </div>
+
+          {/* Emoji Grid */}
+          {filteredEmojis.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {filteredEmojis.map((emoji) => (
+                <motion.div
+                  key={emoji.code}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  onMouseEnter={() => setHoveredEmoji(emoji.code)}
+                  onMouseLeave={() => setHoveredEmoji(null)}
+                >
+                  <Card
+                    className={`bg-background hover:shadow-md transition-all duration-300 overflow-hidden ${
+                      hoveredEmoji === emoji.code ? "ring-1 ring-primary border-primary/20" : "border-border/50"
+                    }`}
+                  >
+                    <div className="p-4 flex flex-col items-center text-center relative">
+                      <div
+                        className="text-4xl mb-3 cursor-pointer hover:scale-125 transition-all duration-200 ease-in-out"
+                        onClick={() => copyToClipboard(emoji.emoji, "emoji")}
+                        title="Click to copy emoji"
+                      >
+                        {emoji.emoji}
+                      </div>
+                      <div
+                        className="text-xs font-mono text-primary mb-2 cursor-pointer group/code relative px-2 py-1 rounded-md bg-primary/5 hover:bg-primary/10 transition-colors"
+                        onClick={() => copyToClipboard(emoji.code, "code")}
+                        title="Click to copy code"
+                      >
+                        {emoji.code}
+                      </div>
+                      <div className="text-xs text-muted-foreground line-clamp-1 mt-1">{emoji.description}</div>
+
+                      {/* Category badge */}
+                      <div className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
+                        {emoji.category}
+                      </div>
+
+                      {/* Copy feedback */}
+                      {copiedEmoji === `${emoji.emoji}-emoji` && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary/10 backdrop-blur-sm flex items-center justify-center text-primary font-medium"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <div className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-md shadow-sm">
+                            <Check className="h-4 w-4" />
+                            <span>Copied!</span>
+                          </div>
+                        </motion.div>
+                      )}
+                      {copiedEmoji === `${emoji.code}-code` && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary/10 backdrop-blur-sm flex items-center justify-center text-primary font-medium"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <div className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-md shadow-sm">
+                            <Check className="h-4 w-4" />
+                            <span>Copied!</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 text-muted-foreground bg-muted/10 rounded-xl border border-border/30">
+              <div className="flex flex-col items-center">
+                <motion.div
+                  className="text-6xl mb-4"
+                  animate={{
+                    rotate: [0, -10, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatDelay: 1,
+                  }}
+                >
+                  🔍
+                </motion.div>
+                <h3 className="text-xl font-medium mb-2">No emojis found</h3>
+                <p className="text-sm max-w-md mx-auto">
+                  We couldn't find any emojis matching your current filters. Try adjusting your search or selecting a
+                  different category.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-6"
+                  onClick={() => {
+                    setSearchTerm("")
+                    setActiveCategory("all")
+                  }}
+                >
+                  Reset all filters
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Usage Guide */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+          <span className="text-xl">💡</span>
+          <span>How to Use Commit Emojis</span>
+        </h3>
+
+        <div className="space-y-4">
+          <div className="bg-muted/20 border border-border/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium mb-2">Format</h4>
+            <div className="font-mono text-sm bg-background p-3 rounded-md">
+              <span className="text-primary">emoji</span> <span className="text-muted-foreground">commit message</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Place the emoji at the beginning of your commit message, followed by a space.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="bg-muted/20 border border-border/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">✨</span>
+                <span className="text-sm font-medium">New Features</span>
+              </div>
+              <div className="font-mono text-xs bg-background p-2 rounded-md">✨ Add user authentication</div>
+            </div>
+
+            <div className="bg-muted/20 border border-border/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🐛</span>
+                <span className="text-sm font-medium">Bug Fixes</span>
+              </div>
+              <div className="font-mono text-xs bg-background p-2 rounded-md">🐛 Fix login redirect issue</div>
+            </div>
+
+            <div className="bg-muted/20 border border-border/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">♻️</span>
+                <span className="text-sm font-medium">Refactoring</span>
+              </div>
+              <div className="font-mono text-xs bg-background p-2 rounded-md">♻️ Refactor API client</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
+
