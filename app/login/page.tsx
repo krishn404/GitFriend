@@ -23,7 +23,6 @@ export default function LoginPage() {
     }
   }, [user, loading, router])
 
-  // Handle GitHub sign in separately to ensure redirection
   const handleGithubSignIn = async () => {
     try {
       await signInWithGithub()
