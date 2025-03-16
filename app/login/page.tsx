@@ -28,7 +28,7 @@ export default function LoginPage() {
       await signInWithGithub()
       // If we reached here and have a user, redirect
       // This provides a fallback in case the effect doesn't trigger
-      if (useAuth().user) {
+      if (user) {
         router.push("/chat")
       }
     } catch (error) {
