@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Github, MessageSquare, GitBranch, Code, ArrowRight, ChevronRight, Star } from "lucide-react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 export function LandingPage() {
   const { user, loading } = useAuth()
@@ -15,26 +16,52 @@ export function LandingPage() {
   // Redirect to chat if already logged in
   useEffect(() => {
     if (user && !loading) {
-      router.push("/chat")
+      router.push("/")
     }
   }, [user, loading, router])
 
+  // Add these animation variants
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 }
+  }
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#121212] to-[#1a1a1a]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent animate-spin"></div>
-          <p className="text-white text-lg">Loading...</p>
+          <div className="w-10 h-10 rounded-full border-4 border-t-primary border-r-transparent border-b-primary border-l-transparent animate-spin"></div>
+          <p className="text-foreground text-base">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#121212] to-[#1a1a1a] text-white overflow-hidden">
-      {/* Animated background elements */}
+    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+      {/* Update background elements with motion */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-full">
+        <motion.div 
+          className="absolute top-0 left-0 w-full h-full"
+          animate={{
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, 0]
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
           <div
             className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full filter blur-3xl animate-pulse"
             style={{ animationDuration: "15s" }}
@@ -47,7 +74,7 @@ export function LandingPage() {
             className="absolute top-2/3 left-1/3 w-72 h-72 bg-cyan-600/10 rounded-full filter blur-3xl animate-pulse"
             style={{ animationDuration: "25s" }}
           ></div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Header */}
@@ -66,11 +93,16 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Update Hero Section */}
       <section className="relative z-10 px-6 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 md:space-y-8">
+            <motion.div 
+              className="space-y-6 md:space-y-8"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Your AI-Powered{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
@@ -98,8 +130,13 @@ export function LandingPage() {
                   <Github className="h-5 w-5 ml-2" />
                 </Button>
               </div>
-            </div>
-            <div className="relative">
+            </motion.div>
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-3xl filter blur-xl opacity-30"></div>
               <div className="relative bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl">
                 <div className="flex items-center gap-3 mb-4">
@@ -136,24 +173,38 @@ export function LandingPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Update Features Section */}
       <section id="features" className="relative z-10 px-6 py-16 md:py-24 bg-black/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+        <motion.div 
+          className="max-w-7xl mx-auto"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+        >
+          <motion.div 
+            className="text-center mb-16"
+            variants={fadeInUp}
+          >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
               Git Friend combines AI intelligence with developer tools to make your Git workflow seamless
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-blue-600/20 flex items-center justify-center mb-5">
                 <MessageSquare className="h-7 w-7 text-blue-400" />
               </div>
@@ -161,10 +212,15 @@ export function LandingPage() {
               <p className="text-gray-400">
                 Get instant answers to all your Git and GitHub questions with our advanced AI chat assistant.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 2 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-purple-600/20 flex items-center justify-center mb-5">
                 <Github className="h-7 w-7 text-purple-400" />
               </div>
@@ -173,10 +229,15 @@ export function LandingPage() {
                 Analyze GitHub profiles and repositories, generate commit messages, and get insights about trending
                 projects.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 3 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-green-600/20 flex items-center justify-center mb-5">
                 <Code className="h-7 w-7 text-green-400" />
               </div>
@@ -184,10 +245,15 @@ export function LandingPage() {
               <p className="text-gray-400">
                 Never forget a Git command again. Get syntax help, examples, and best practices for any Git operation.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 4 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-yellow-600/20 flex items-center justify-center mb-5">
                 <GitBranch className="h-7 w-7 text-yellow-400" />
               </div>
@@ -195,10 +261,15 @@ export function LandingPage() {
               <p className="text-gray-400">
                 Learn best practices for branching strategies, pull requests, and collaborative development workflows.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 5 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-red-600/20 flex items-center justify-center mb-5">
                 <Star className="h-7 w-7 text-red-400" />
               </div>
@@ -207,10 +278,15 @@ export function LandingPage() {
                 Stay updated with trending GitHub repositories and discover new projects in your favorite programming
                 languages.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 6 */}
-            <div className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all hover:translate-y-[-5px] duration-300">
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:bg-gray-900/70 transition-all duration-300"
+              variants={fadeInUp}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="w-14 h-14 rounded-xl bg-cyan-600/20 flex items-center justify-center mb-5">
                 <MessageSquare className="h-7 w-7 text-cyan-400" />
               </div>
@@ -218,14 +294,20 @@ export function LandingPage() {
               <p className="text-gray-400">
                 Paste your Git error messages and get instant solutions and explanations to fix common issues.
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* CTA Section */}
+      {/* Update CTA Section */}
       <section className="relative z-10 px-6 py-16 md:py-24">
-        <div className="max-w-5xl mx-auto">
+        <motion.div 
+          className="max-w-5xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-lg border border-white/10 rounded-3xl p-8 md:p-12 shadow-xl">
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Supercharge Your Git Workflow?</h2>
@@ -255,7 +337,7 @@ export function LandingPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}

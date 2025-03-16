@@ -1,72 +1,109 @@
-import { GitHubProfile } from "@/components/github-profile"
-import { CommitGenerator } from "@/components/commit-generator"
-import { RepoAnalyzer } from "@/components/repo-analyzer"
-// import { ThemeToggle } from "@/components/theme-toggle"
+"use client"
+
+import { GitHubProfile } from "@/components/github/github-profile"
+import { CommitGenerator } from "@/components/github/commit-generator"
+import { RepoAnalyzer } from "@/components/github/repo-analyzer"
+import { CommitEmojis } from "@/components/github/commit-emojis" // Add this import
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { GitBranch, User, FileCode, Github, ArrowLeft } from 'lucide-react'
+import { GitBranch, User, FileCode, ArrowLeft, Smile } from "lucide-react" // Add Smile icon
 import Link from "next/link"
+import ProtectedRoute from "@/components/protected-route"
+import { motion } from "framer-motion"
 
 export default function GitHubPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#121212] to-[#1a1a1a]">
-      <div className="container mx-auto py-6 px-4 sm:py-12">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/" 
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800/80 hover:bg-gray-700/80 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4 text-gray-300" />
-            </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">GitHub Tools</h1>
-          </div>
-          {/* <ThemeToggle /> */}
-        </div>
-        
-        <div className="relative">
-          <div className="absolute -top-10 -left-10 w-64 h-64 bg-purple-600/10 rounded-full filter blur-3xl opacity-20"></div>
-          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-600/10 rounded-full filter blur-3xl opacity-20"></div>
-          
-          <div className="relative bg-black/20 backdrop-blur-lg border border-white/5 rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <Github className="h-6 w-6 text-white" />
-              <h2 className="text-xl font-semibold text-white">Explore GitHub with AI-powered tools</h2>
+    <ProtectedRoute>
+      <main className="min-h-screen bg-background px-4 py-6 md:px-8 md:py-10">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              </Link>
+              <h1 className="text-xl font-medium text-foreground">GitHub Tools</h1>
             </div>
-            
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-8 bg-gray-800/50 p-1 rounded-xl">
-                <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-gray-700 rounded-lg transition-all">
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">Profile Explorer</span>
-                  <span className="sm:hidden">Profile</span>
-                </TabsTrigger>
-                <TabsTrigger value="repository" className="flex items-center gap-2 data-[state=active]:bg-gray-700 rounded-lg transition-all">
-                  <GitBranch className="h-4 w-4" />
-                  <span className="hidden sm:inline">Repository Analyzer</span>
-                  <span className="sm:hidden">Repos</span>
-                </TabsTrigger>
-                <TabsTrigger value="commit" className="flex items-center gap-2 data-[state=active]:bg-gray-700 rounded-lg transition-all">
-                  <FileCode className="h-4 w-4" />
-                  <span className="hidden sm:inline">Commit Generator</span>
-                  <span className="sm:hidden">Commits</span>
-                </TabsTrigger>
-              </TabsList>
+            <ThemeToggle />
+          </div>
 
-              <TabsContent value="profile" className="animate-in fade-in-50 duration-300">
-                <GitHubProfile />
-              </TabsContent>
+          {/* Background effects */}
+          <div className="relative">
+            <motion.div
+              className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full filter blur-3xl opacity-50"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+            />
+            <motion.div
+              className="absolute -bottom-20 -right-20 w-64 h-64 bg-secondary/5 rounded-full filter blur-3xl opacity-50"
+              animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", delay: 5 }}
+            />
 
-              <TabsContent value="repository" className="animate-in fade-in-50 duration-300">
-                <RepoAnalyzer />
-              </TabsContent>
+            {/* Main content */}
+            <div className="relative bg-card/30 backdrop-blur-sm border border-border rounded-xl overflow-hidden shadow-sm">
+              <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="w-full flex justify-between p-1 bg-muted/50 border-b border-border rounded-t-xl rounded-b-none h-16">
+                  <TabsTrigger
+                    value="profile"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all hover:bg-muted/80 group"
+                  >
+                    <User className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="hidden sm:inline font-medium">Profile Explorer</span>
+                    <span className="sm:hidden font-medium">Profiles</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="repository"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all hover:bg-muted/80 group"
+                  >
+                    <GitBranch className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="hidden sm:inline font-medium">Repository Analyzer</span>
+                    <span className="sm:hidden font-medium">Repos</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="commit"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all hover:bg-muted/80 group"
+                  >
+                    <FileCode className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="hidden sm:inline font-medium">Commit Generator</span>
+                    <span className="sm:hidden font-medium">Commits</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="emojis"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all hover:bg-muted/80 group"
+                  >
+                    <Smile className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    <span className="hidden sm:inline font-medium">Commit Emojis</span>
+                    <span className="sm:hidden font-medium">Emojis</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="commit" className="animate-in fade-in-50 duration-300">
-                <CommitGenerator />
-              </TabsContent>
-            </Tabs>
+                <div className="p-4 sm:p-6">
+                  <TabsContent value="profile" className="mt-0 animate-in fade-in-50 duration-300">
+                    <GitHubProfile />
+                  </TabsContent>
+
+                  <TabsContent value="repository" className="mt-0 animate-in fade-in-50 duration-300">
+                    <RepoAnalyzer />
+                  </TabsContent>
+
+                  <TabsContent value="commit" className="mt-0 animate-in fade-in-50 duration-300">
+                    <CommitGenerator />
+                  </TabsContent>
+
+                  <TabsContent value="emojis" className="mt-0 animate-in fade-in-50 duration-300">
+                    <CommitEmojis />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </ProtectedRoute>
   )
 }
+

@@ -1,13 +1,16 @@
 "use client"
 
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-import type { ThemeProviderProps } from "next-themes"
+import type React from "react"
+
+import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 
-export function Providers({ children, ...props }: ThemeProviderProps) {
+export function Providers({ children, ...props }: { children: React.ReactNode; [key: string]: any }) {
   return (
     <AuthProvider>
-      <NextThemesProvider {...props}>{children}</NextThemesProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {children}
+      </ThemeProvider>
     </AuthProvider>
   )
 }

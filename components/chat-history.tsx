@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { History, Trash2, MessageSquare, Plus, Loader2, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 interface ChatSession {
   sessionId: string
@@ -87,29 +88,36 @@ export function ChatHistory() {
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant="ghost"
-        className="fixed top-4 left-4 z-30 w-10 h-10 rounded-full bg-gray-800/80 backdrop-blur-sm border border-white/10 shadow-lg hover:bg-gray-700/80 transition-colors"
+        className="fixed top-4 left-4 z-30 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-lg hover:bg-muted/80 transition-colors"
       >
-        {isOpen ? <X className="h-5 w-5 text-gray-300" /> : <History className="h-5 w-5 text-gray-300" />}
+        {isOpen ? (
+          <X className="h-5 w-5 text-muted-foreground" />
+        ) : (
+          <History className="h-5 w-5 text-muted-foreground" />
+        )}
       </Button>
 
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-20 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 bg-background/50 backdrop-blur-sm z-20 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={() => setIsOpen(false)}
       />
 
-      <div
-        className={`fixed left-0 top-0 bottom-0 w-80 bg-gray-900/95 backdrop-blur-md border-r border-white/5 shadow-xl z-30 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      <motion.div
+        className={`fixed left-0 top-0 bottom-0 w-80 bg-card/95 backdrop-blur-md border-r border-border shadow-xl z-30 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        initial={false}
+        animate={{ x: isOpen ? 0 : "-100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
       >
-        <div className="p-4 border-b border-gray-800">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-              <History className="h-5 w-5 text-blue-400" />
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
               Chat History
             </h2>
             <Button
               onClick={startNewChat}
               variant="ghost"
-              className="h-8 w-8 rounded-full bg-blue-600/20 hover:bg-blue-600/30 text-blue-400"
+              className="h-8 w-8 rounded-full bg-primary/20 hover:bg-primary/30 text-primary"
             >
               <Plus className="h-4 w-4" />
               <span className="sr-only">New Chat</span>
@@ -120,29 +128,26 @@ export function ChatHistory() {
         <div className="overflow-y-auto h-[calc(100vh-64px)] scrollbar-thin">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 text-blue-400 animate-spin mb-2" />
-              <p className="text-gray-400 text-sm">Loading chat history...</p>
+              <Loader2 className="h-6 w-6 text-primary animate-spin mb-2" />
+              <p className="text-muted-foreground text-sm">Loading chat history...</p>
             </div>
           ) : error ? (
-            <div className="p-4 text-center text-red-400">{error}</div>
+            <div className="p-4 text-center text-destructive">{error}</div>
           ) : sessions.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              <MessageSquare className="h-8 w-8 text-gray-600 mx-auto mb-2" />
+            <div className="p-6 text-center text-muted-foreground">
+              <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p>No chat history found</p>
               <p className="text-sm mt-1">Start a new conversation</p>
             </div>
           ) : (
             <div className="p-2 space-y-2">
               {sessions.map((session) => (
-                <Card
-                  key={session.sessionId}
-                  className="bg-gray-800/50 hover:bg-gray-800 border-gray-700/30 transition-colors"
-                >
+                <Card key={session.sessionId} className="bg-muted/50 hover:bg-muted border-border transition-colors">
                   <div className="p-3">
                     <div className="flex justify-between items-start">
                       <Link
                         href={`/chat/${session.sessionId}`}
-                        className="flex-1 text-gray-200 hover:text-white font-medium truncate"
+                        className="flex-1 text-foreground hover:text-foreground/90 font-medium truncate"
                         onClick={() => setIsOpen(false)}
                       >
                         {session.title}
@@ -150,7 +155,7 @@ export function ChatHistory() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                        className="h-7 w-7 rounded-full bg-destructive/10 hover:bg-destructive/20 text-destructive"
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
@@ -165,14 +170,14 @@ export function ChatHistory() {
                         )}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{formatDate(session.updatedAt)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{formatDate(session.updatedAt)}</p>
                   </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

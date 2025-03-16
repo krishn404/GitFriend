@@ -2,31 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --gradient-start: #ffffff;
-  --gradient-end: #ffebee;
-  --card-bg: rgba(255, 255, 255, 0.8);
-  --text-primary: #111111;
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --border-color: rgba(0, 0, 0, 0.1);
-  --icon-bg: rgba(0, 0, 0, 0.05);
-  --scrollbar-thumb: rgba(155, 155, 155, 0.5);
-  --background: #ffffff;
-  --foreground: #111111;
-}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    
+    /* Custom variables */
+    --gradient-start: 0 0% 100%;
+    --gradient-end: 0 100% 98%;
+    --card-bg: 0 0% 100% / 0.8;
+    --card-hover: 0 0% 98% / 0.8;
+    --text-primary: 240 10% 3.9%;
+    --text-secondary: 240 10% 3.9% / 0.6;
+    --border-color: 0 0% 0% / 0.1;
+    --icon-bg: 0 0% 0% / 0.05;
+    --scrollbar-thumb: 0 0% 60% / 0.5;
+  }
 
-.dark {
-  --gradient-start: #121212;
-  --gradient-end: #121212;
-  --card-bg: rgba(37, 37, 37, 0.7);
-  --card-hover: rgba(45, 45, 45, 0.8);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --icon-bg: #2a2a2a;
-  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
-  --background: #121212;
-  --foreground: #ffffff;
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    
+    /* Custom dark theme variables - restored */
+    --gradient-start: 0 0% 7%;
+    --gradient-end: 0 0% 10%;
+    --card-bg: 0 0% 12% / 0.8;
+    --card-hover: 0 0% 15% / 0.8;
+    --text-primary: 0 0% 100%;
+    --text-secondary: 0 0% 100% / 0.7;
+    --border-color: 0 0% 100% / 0.1;
+    --icon-bg: 0 0% 16%;
+    --scrollbar-thumb: 0 0% 100% / 0.1;
+    
+    /* Additional dark theme colors */
+    --dark-bg: 0 0% 9%;
+    --dark-card: 0 0% 12%;
+    --dark-card-hover: 0 0% 15%;
+    --dark-border: 0 0% 20%;
+    --blue-accent: 217 91% 60%;
+    --blue-accent-hover: 217 91% 55%;
+    --blue-accent-muted: 217 91% 60% / 0.2;
+    --purple-accent: 270 91% 65%;
+    --purple-accent-muted: 270 91% 65% / 0.2;
+    --red-accent: 0 91% 60%;
+    --green-accent: 142 91% 60%;
+  }
 }
 
 /* Smooth scrolling */
@@ -37,7 +92,7 @@ html {
 /* Custom scrollbar */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -49,7 +104,7 @@ html {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: hsl(var(--scrollbar-thumb));
   border-radius: 20px;
   border: transparent;
 }
@@ -57,7 +112,7 @@ html {
 /* Custom scrollbar styles */
 .scrollbar-custom {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
 }
 
 .scrollbar-custom::-webkit-scrollbar {
@@ -69,22 +124,26 @@ html {
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: hsl(var(--scrollbar-thumb));
   border-radius: 10px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-thumb-hover);
+  background-color: hsl(var(--scrollbar-thumb-hover, var(--scrollbar-thumb)));
 }
 
 body {
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  background: linear-gradient(135deg, hsl(var(--gradient-start)) 0%, hsl(var(--gradient-end)) 100%);
   min-height: 100vh;
-  color: var(--text-primary);
+  color: hsl(var(--text-primary));
+}
+
+.dark body {
+  background: #121212;
 }
 
 .glass-container {
-  background: var(--card-bg);
+  background: hsl(var(--card-bg));
   backdrop-filter: blur(12px);
   border-radius: 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -92,11 +151,12 @@ body {
 
 .dark .glass-container {
   box-shadow: none;
-  border: 1px solid var(--border-color);
+  border: 1px solid hsl(var(--border-color));
+  background: rgba(24, 24, 27, 0.8);
 }
 
 .suggestion-card {
-  background: var(--card-bg);
+  background: hsl(var(--card-bg));
   backdrop-filter: blur(8px);
   border-radius: 16px;
   transition: all 0.2s ease;
@@ -105,7 +165,7 @@ body {
 }
 
 .dark .suggestion-card {
-  background: rgba(37, 37, 37, 0.95);
+  background: rgba(24, 24, 27, 0.8);
   box-shadow: none;
 }
 
@@ -115,19 +175,24 @@ body {
 }
 
 .suggestion-card .icon-container {
-  background: var(--icon-bg);
+  background: hsl(var(--icon-bg));
   border-radius: 12px;
 }
 
 .input-container {
-  background: var(--card-bg);
+  background: hsl(var(--card-bg));
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.dark .input-container {
+  background: rgba(24, 24, 27, 0.8);
+  box-shadow: none;
+}
+
 textarea {
   background: transparent;
-  color: var(--text-primary);
+  color: hsl(var(--text-primary));
 }
 
 textarea:focus {
@@ -141,43 +206,38 @@ textarea::placeholder {
 }
 
 .input-box {
-  background: #f5f5f5;
-  color: #111111;
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
 }
 
 .dark .input-box {
-  background: #141414;
-  color: #ffffff;
-}
-
-.dark .input-container {
-  background: #141414;
-  box-shadow: none;
+  background: rgba(39, 39, 42, 0.5);
+  color: #e4e4e7;
 }
 
 .text-secondary {
-  color: var(--text-secondary);
+  color: hsl(var(--text-secondary));
 }
 
 .dark textarea,
 .dark .input-container {
-  color: white;
+  color: #ffffff;
 }
 
 .dark textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .dark .text-secondary {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .border-divider {
-  border-color: #e5e5e5;
+  border-color: hsl(var(--border));
 }
 
 .dark .border-divider {
-  border-color: #252525;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Code block styles */
@@ -204,9 +264,13 @@ textarea::placeholder {
 
 /* Outer code block container */
 .code-block-container {
-  background: #1c1c1c;
+  background: hsl(var(--card));
   border-radius: 12px;
   margin: 1rem 0;
+}
+
+.dark .code-block-container {
+  background: rgba(24, 24, 27, 0.8);
 }
 
 /* Code block copy button */
@@ -221,13 +285,23 @@ textarea::placeholder {
 
 /* Animation utilities */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {
@@ -238,17 +312,94 @@ textarea::placeholder {
   animation: slideUp 0.4s ease-out;
 }
 
+/* Word-by-word fade-in animation */
+.word-fade-in {
+  opacity: 0;
+  animation: wordFadeIn 0.5s ease-out forwards;
+}
 
-
-@layer base {}
-
-
-
-@layer base {
-  * {
-    @apply border-border;
+@keyframes wordFadeIn {
+  from {
+    opacity: 0;
   }
-  body {
-    @apply bg-background text-foreground;
+  to {
+    opacity: 1;
   }
+}
+
+/* Dark theme specific overrides */
+.dark .bg-card {
+  background-color: #18181b;
+}
+
+.dark .border-border {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .bg-background {
+  background-color: #121212;
+}
+
+.dark .bg-muted {
+  background-color: #27272a;
+}
+
+.dark .text-foreground {
+  color: #ffffff;
+}
+
+.dark .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .bg-primary {
+  background-color: #3b82f6;
+}
+
+.dark .text-primary {
+  color: #3b82f6;
+}
+
+.dark .hover\:bg-muted:hover {
+  background-color: #323232;
+}
+
+.dark .bg-primary\/20 {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .bg-primary\/10 {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.dark .bg-secondary\/5 {
+  background-color: rgba(124, 58, 237, 0.05);
+}
+
+.dark .bg-primary\/5 {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark .bg-card\/20 {
+  background-color: rgba(24, 24, 27, 0.2);
+}
+
+.dark .bg-card\/80 {
+  background-color: rgba(24, 24, 27, 0.8);
+}
+
+.dark .bg-card\/95 {
+  background-color: rgba(24, 24, 27, 0.95);
+}
+
+.dark .bg-destructive\/10 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.dark .hover\:bg-destructive\/20:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.dark .text-destructive {
+  color: #ef4444;
 }
