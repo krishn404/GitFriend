@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/groq": "latest",
+    "@ai-sdk/groq": "^1.2.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
@@ -49,6 +49,7 @@
     "firebase": "^11.4.0",
     "firebase-admin": "^13.2.0",
     "framer-motion": "^12.4.2",
+    "groq-sdk": "^0.17.0",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "marked": "^15.0.7",
@@ -56,6 +57,7 @@
     "mongoose": "^8.0.3",
     "next": "14.2.16",
     "next-themes": "latest",
+    "openai": "^4.89.0",
     "react": "^18",
     "react-day-picker": "8.10.1",
     "react-dom": "^18",
