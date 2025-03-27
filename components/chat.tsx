@@ -307,7 +307,7 @@ export function Chat({ initialSessionId, initialMessages = [] }: ChatProps) {
       // Animate the text word by word
       const words = text.split(/(\s+)/)
       for (let i = 0; i < words.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 30)) // Adjust speed here
+        await new Promise((resolve) => setTimeout(resolve, 10)) // Adjust speed here
         setMessages((prev) => {
           const newMessages = [...prev]
           newMessages[newMessages.length - 1].content = words.slice(0, i + 1).join("")
@@ -347,7 +347,7 @@ export function Chat({ initialSessionId, initialMessages = [] }: ChatProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Chat History Sidebar */}
-      <ChatHistory />
+      {/* <ChatHistory /> */}
 
       {/* Top Navigation - Minimal header */}
       <header className="p-4 sm:p-4 fixed top-0 left-0 right-0 z-10 bg-gradient-to-b from-background to-transparent">
