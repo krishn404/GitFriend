@@ -23,7 +23,7 @@ An AI-powered web application that helps developers learn and troubleshoot Git a
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/krishn404/gitchat.git
+   git clone https://github.com/krishn404/gitfriend.git
    cd gitchat
    ```
 
